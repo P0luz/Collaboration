@@ -1,21 +1,21 @@
 #!/bin/bash
-# Pair Mesh pre-push hook
+# Collabration pre-push hook
 # 是什么:推送前拦截器,确保房间内没有未解决的 waiting 状态锁。
-# 做什么:查询 /api/pair-mesh/status,若存在 waiting 锁则 block push。
-# 不做什么:Pair Mesh 未配置(无 ROOM)时直接放行。
-# 依赖环境变量:PAIR_MESH_URL(默认 http://localhost:8080)、PAIR_MESH_ROOM
+# 做什么:查询 /api/collabration/status,若存在 waiting 锁则 block push。
+# 不做什么:Collabration 未配置(无 ROOM)时直接放行。
+# 依赖环境变量:COLLABRATION_URL(默认 http://localhost:8080)、COLLABRATION_ROOM
 # 依赖外部命令:curl、jq
 
-PAIR_MESH_URL="${PAIR_MESH_URL:-http://localhost:8080}"
-PAIR_MESH_ROOM="${PAIR_MESH_ROOM:-}"
+COLLABRATION_URL="${COLLABRATION_URL:-http://localhost:8080}"
+COLLABRATION_ROOM="${COLLABRATION_ROOM:-}"
 
-if [ -z "$PAIR_MESH_ROOM" ]; then
+if [ -z "$COLLABRATION_ROOM" ]; then
     exit 0
 fi
 
-RESPONSE=$(curl -s "$PAIR_MESH_URL/api/pair-mesh/status/$PAIR_MESH_ROOM")
+RESPONSE=$(curl -s "$COLLABRATION_URL/api/collabration/status/$COLLABRATION_ROOM")
 if [ -z "$RESPONSE" ]; then
-    echo "[Pair Mesh] 无法连接 $PAIR_MESH_URL,push 暂停。请确认服务在运行。"
+    echo "[Collabration] 无法连接 $COLLABRATION_URL,push 暂停。请确认服务在运行。"
     exit 1
 fi
 
@@ -26,7 +26,7 @@ WAITING=$(echo "$RESPONSE" | jq '[.active_locks[]? | select(.status == "waiting"
 
 if [ "$WAITING" != "null" ] && [ "$WAITING" -gt 0 ] 2>/dev/null; then
     echo ""
-    echo "[Pair Mesh] push 被阻止。"
+    echo "[Collabration] push 被阻止。"
     echo "存在 $WAITING 个未解决的 waiting 状态。"
     echo "请先解决所有冲突再 push。"
     echo ""

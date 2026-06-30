@@ -1,8 +1,8 @@
 """
-Pair Mesh 数据模型
+Collabration 数据模型
 ==================
 
-是什么:Pair Mesh 全部领域数据结构的单一定义处。
+是什么:Collabration 全部领域数据结构的单一定义处。
 做什么:定义房间(Room)、参与者(Participant)、意图锁(IntentLock)、排队项(QueueEntry)、
         事件(Event)、Hook 反馈(HookFeedback),以及两个枚举(LockStatus / EventType)。
 不做什么:不含任何业务逻辑(创建/冲突/排队逻辑分别在 rooms/locks/queues 里);不做持久化。
@@ -11,7 +11,7 @@ Pair Mesh 数据模型
 
 设计说明:时间统一用 UTC aware 的 ISO8601 字符串存储(now_iso),避免 naive/aware 比较出错。
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 
@@ -130,7 +130,7 @@ class Event:
 class HookFeedback:
     """Git hook 拦截时的反馈,同时面向人类和 AI。
 
-    pair_mesh_action 示例:
+    collabration_action 示例:
         {
             "tool": "wait_for_clear",
             "args": {"file": "backend/routes/mcp.py"},
@@ -143,4 +143,4 @@ class HookFeedback:
     blocked_files: list[str] = field(default_factory=list)
     holders: list[dict] = field(default_factory=list)
     human_message: str = ""
-    pair_mesh_action: dict = field(default_factory=dict)
+    collabration_action: dict = field(default_factory=dict)

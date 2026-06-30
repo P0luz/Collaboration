@@ -1,12 +1,12 @@
 # Git 工作流(Git Workflow)
 
-Pair Mesh 下的协作 Git 流程。
+Collabration 下的协作 Git 流程。
 
 ## 分支
 
 - `main`:稳定主分支。
-- `dev/pair-mesh-core`:Pair Mesh 功能开发分支。
-- 功能特性从 `dev/pair-mesh-core` 切出。
+- `dev/collabration-core`:Collabration 功能开发分支。
+- 功能特性从 `dev/collabration-core` 切出。
 
 ## 改动一个文件的完整流程
 
@@ -27,12 +27,12 @@ Pair Mesh 下的协作 Git 流程。
 ## Hook 配置
 
 ```bash
-export PAIR_MESH_URL=http://localhost:8080
-export PAIR_MESH_ROOM=<房间名>
-export PAIR_MESH_USER=<你的名字>
-# 把 scripts/pair-mesh-hooks/* 链接到 .git/hooks/
-ln -sf ../../scripts/pair-mesh-hooks/pre-commit .git/hooks/pre-commit
-ln -sf ../../scripts/pair-mesh-hooks/pre-push   .git/hooks/pre-push
+export COLLABRATION_URL=http://localhost:8080
+export COLLABRATION_ROOM=<房间名>
+export COLLABRATION_USER=<你的名字>
+# 把 scripts/collabration-hooks/* 链接到 .git/hooks/
+ln -sf ../../scripts/collabration-hooks/pre-commit .git/hooks/pre-commit
+ln -sf ../../scripts/collabration-hooks/pre-push   .git/hooks/pre-push
 ```
 
-未设置 `PAIR_MESH_ROOM`/`PAIR_MESH_USER` 时 hook 自动放行,不影响普通仓库。
+未设置 `COLLABRATION_ROOM`/`COLLABRATION_USER` 时 hook 自动放行,不影响普通仓库。

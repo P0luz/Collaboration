@@ -1,8 +1,8 @@
 """
-Pair Mesh 意图锁核心
+Collabration 意图锁核心
 ====================
 
-是什么:Pair Mesh 的核心 —— Intent Lock 的声明、释放、扩展、过期检查。
+是什么:Collabration 的核心 —— Intent Lock 的声明、释放、扩展、过期检查。
 做什么:
   - declare_intent:AI 改代码前声明意图;无冲突则建 active 锁占用文件,有冲突则建 waiting 锁并入队。
   - report_done:完成后释放锁,并提升各文件队列里的下一位。
@@ -16,7 +16,7 @@ Pair Mesh 意图锁核心
 
 并发说明:M2 单进程内存模型,不加锁。多进程/分布式由后续 M3 relay 层处理。
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

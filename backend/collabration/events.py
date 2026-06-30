@@ -1,5 +1,5 @@
 """
-Pair Mesh 事件记录
+Collabration 事件记录
 ==================
 
 是什么:房间内关键操作的审计日志(声明/冲突/释放/扩展/消息等)。
@@ -7,7 +7,7 @@ Pair Mesh 事件记录
 不做什么:不做持久化(内存);不做查询过滤(只按房间+条数)。
 对外暴露:record, get_events,以及内部存储 _events、上限 _MAX_EVENTS。
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

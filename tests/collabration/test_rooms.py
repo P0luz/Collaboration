@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.pair_mesh import rooms
+from backend.collabration import rooms
 
 
 @pytest.fixture(autouse=True)

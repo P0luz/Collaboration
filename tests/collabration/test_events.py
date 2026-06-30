@@ -2,8 +2,8 @@
 
 import pytest
 
-from backend.pair_mesh import events
-from backend.pair_mesh.schema import EventType
+from backend.collabration import events
+from backend.collabration.schema import EventType
 
 
 @pytest.fixture(autouse=True)

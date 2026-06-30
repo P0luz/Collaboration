@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.pair_mesh import locks, queues, rooms
+from backend.collabration import locks, queues, rooms
 
 
 @pytest.fixture(autouse=True)

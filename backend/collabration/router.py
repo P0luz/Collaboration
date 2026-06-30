@@ -1,17 +1,17 @@
 """
-Pair Mesh FastAPI Router
+Collabration FastAPI Router
 ========================
 
-是什么:Pair Mesh 的 HTTP API 层,把 rooms/locks/queues/events 暴露成 REST 端点。
+是什么:Collabration 的 HTTP API 层,把 rooms/locks/queues/events 暴露成 REST 端点。
 做什么:房间(create/join/leave/heartbeat)、意图锁(declare/done/extend/wait_for_clear)、
         状态查询(status/queue/events)、消息(message)、Git hook 检查(hook/check)。
         每个写操作顺带记录一条 event。
 不做什么:不含业务逻辑(全部委托给各 utils 模块);不做鉴权(M2 阶段)。
-对外暴露:router(APIRouter,prefix=/api/pair-mesh)。
+对外暴露:router(APIRouter,prefix=/api/collabration)。
 
 序列化说明:dataclass 用 dataclasses.asdict 转 dict;LockStatus/EventType 继承 str,可直接 JSON 化。
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 
@@ -25,7 +25,7 @@ from pydantic import BaseModel
 from . import events, git_gate, locks, queues, rooms
 from .schema import EventType
 
-router = APIRouter(prefix="/api/pair-mesh", tags=["pair-mesh"])
+router = APIRouter(prefix="/api/collabration", tags=["collabration"])
 
 
 # ── Request Models ──────────────────────────────────────────────
@@ -232,5 +232,5 @@ def api_hook_check(req: HookCheckRequest) -> dict:
         "blocked": True,
         "results": [r for r in results if r["status"] != "ok"],
         "human_message": feedback.human_message,
-        "PAIR_MESH_ACTION": feedback.pair_mesh_action,
+        "COLLABRATION_ACTION": feedback.collabration_action,
     }

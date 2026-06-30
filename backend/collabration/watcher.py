@@ -1,5 +1,5 @@
 """
-Pair Mesh 文件监听(M4 占桩)
+Collabration 文件监听(M4 占桩)
 ============================
 
 是什么:文件系统监听器,检测对已锁定文件的真实改动并刷新锁活动时间 / 上报未声明改动。
@@ -10,7 +10,7 @@ Pair Mesh 文件监听(M4 占桩)
 
 里程碑:M4。在此之前调用应明确失败,而不是静默无行为(避免误以为监听已生效)。
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

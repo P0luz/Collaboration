@@ -15,7 +15,7 @@
 每个源码文件头部保留两行声明:
 
 ```
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 ```
 

@@ -1,6 +1,6 @@
 # Third Party Notices
 
-This project (Collaboration / Pair Mesh) is an independent, standalone tool.
+This project (Collaboration / Collabration) is an independent, standalone tool.
 It does not include or depend on any third-party project's source code.
 
 Runtime dependencies (installed via pip, used under their own licenses):
@@ -17,5 +17,5 @@ at install time from PyPI. Their respective license texts apply.
 
 ## This project
 
-Collaboration (Pair Mesh) Copyright (c) 2026 P0luz. All rights reserved.
+Collabration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.

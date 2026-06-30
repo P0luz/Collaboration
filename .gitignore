@@ -7,7 +7,7 @@ __pycache__/
 venv/
 
 # 私有原始文件,不进版本控制
-docs/pair-mesh/secret/
+docs/collabration/secret/
 
 # IDE / OS
 .vscode/
