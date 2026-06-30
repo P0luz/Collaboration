@@ -1,0 +1,9 @@
+# Pair Mesh backend 依赖
+# 是什么:独立 Pair Mesh 服务运行 + 测试所需的最小依赖集。
+# 不包含 Open WebUI 任何依赖。
+
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.0
+httpx>=0.27        # FastAPI TestClient 依赖
+pytest>=8.0

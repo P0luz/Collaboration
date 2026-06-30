@@ -1,0 +1,46 @@
+#!/bin/bash
+# Pair Mesh pre-commit hook
+# 是什么:提交前拦截器,检查所有 staged files 是否都持有本人的 active intent lock。
+# 做什么:把 staged 文件发给 /api/pair-mesh/hook/check,被 block 则打印人话+机器指令并 exit 1。
+# 不做什么:Pair Mesh 未配置(无 ROOM/USER)时直接放行,不干扰普通仓库。
+# 依赖环境变量:PAIR_MESH_URL(默认 http://localhost:8080)、PAIR_MESH_ROOM、PAIR_MESH_USER
+# 依赖外部命令:git、curl、jq
+
+PAIR_MESH_URL="${PAIR_MESH_URL:-http://localhost:8080}"
+PAIR_MESH_ROOM="${PAIR_MESH_ROOM:-}"
+PAIR_MESH_USER="${PAIR_MESH_USER:-}"
+
+if [ -z "$PAIR_MESH_ROOM" ] || [ -z "$PAIR_MESH_USER" ]; then
+    # Pair Mesh 未配置:显式放行(这是有意的降级,不是漏判)
+    exit 0
+fi
+
+STAGED=$(git diff --cached --name-only)
+if [ -z "$STAGED" ]; then
+    exit 0
+fi
+
+FILES_JSON=$(echo "$STAGED" | jq -R -s 'split("\n") | map(select(length > 0))')
+
+RESPONSE=$(curl -s -X POST "$PAIR_MESH_URL/api/pair-mesh/hook/check" \
+    -H "Content-Type: application/json" \
+    -d "{\"room_id\": \"$PAIR_MESH_ROOM\", \"requester\": \"$PAIR_MESH_USER\", \"staged_files\": $FILES_JSON}")
+
+if [ -z "$RESPONSE" ]; then
+    # 服务不可达:显式失败而非静默放行,提醒人工确认服务状态
+    echo "[Pair Mesh] 无法连接 $PAIR_MESH_URL,commit 暂停。请确认 Pair Mesh 服务在运行,或清空 PAIR_MESH_ROOM 跳过。"
+    exit 1
+fi
+
+BLOCKED=$(echo "$RESPONSE" | jq -r '.blocked')
+
+if [ "$BLOCKED" = "true" ]; then
+    echo ""
+    echo "$RESPONSE" | jq -r '.human_message'
+    echo ""
+    echo "PAIR_MESH_ACTION:"
+    echo "$RESPONSE" | jq '.PAIR_MESH_ACTION'
+    exit 1
+fi
+
+exit 0
