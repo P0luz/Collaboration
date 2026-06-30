@@ -1,5 +1,5 @@
 """
-Collabration Relay 通信(M3 占桩)
+Collaboration Relay 通信(M3 占桩)
 ==============================
 
 是什么:跨机/跨进程的消息中继层,让不在同一台机器的参与者共享房间状态。
@@ -10,7 +10,7 @@ Collabration Relay 通信(M3 占桩)
 
 里程碑:M3。
 
-Collabration Copyright (c) 2026 P0luz. All rights reserved.
+Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

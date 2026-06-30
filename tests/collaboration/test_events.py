@@ -2,8 +2,8 @@
 
 import pytest
 
-from backend.collabration import events
-from backend.collabration.schema import EventType
+from backend.collaboration import events
+from backend.collaboration.schema import EventType
 
 
 @pytest.fixture(autouse=True)

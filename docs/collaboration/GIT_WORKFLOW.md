@@ -1,12 +1,12 @@
 # Git 工作流(Git Workflow)
 
-Collabration 下的协作 Git 流程。
+Collaboration 下的协作 Git 流程。
 
 ## 分支
 
 - `main`:稳定主分支。
-- `dev/collabration-core`:Collabration 功能开发分支。
-- 功能特性从 `dev/collabration-core` 切出。
+- `dev/collaboration-core`:Collaboration 功能开发分支。
+- 功能特性从 `dev/collaboration-core` 切出。
 
 ## 改动一个文件的完整流程
 
@@ -27,12 +27,12 @@ Collabration 下的协作 Git 流程。
 ## Hook 配置
 
 ```bash
-export COLLABRATION_URL=http://localhost:8080
-export COLLABRATION_ROOM=<房间名>
-export COLLABRATION_USER=<你的名字>
-# 把 scripts/collabration-hooks/* 链接到 .git/hooks/
-ln -sf ../../scripts/collabration-hooks/pre-commit .git/hooks/pre-commit
-ln -sf ../../scripts/collabration-hooks/pre-push   .git/hooks/pre-push
+export COLLABORATION_URL=http://localhost:8080
+export COLLABORATION_ROOM=<房间名>
+export COLLABORATION_USER=<你的名字>
+# 把 scripts/collaboration-hooks/* 链接到 .git/hooks/
+ln -sf ../../scripts/collaboration-hooks/pre-commit .git/hooks/pre-commit
+ln -sf ../../scripts/collaboration-hooks/pre-push   .git/hooks/pre-push
 ```
 
-未设置 `COLLABRATION_ROOM`/`COLLABRATION_USER` 时 hook 自动放行,不影响普通仓库。
+未设置 `COLLABORATION_ROOM`/`COLLABORATION_USER` 时 hook 自动放行,不影响普通仓库。

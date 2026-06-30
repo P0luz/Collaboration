@@ -1,5 +1,5 @@
 """
-Collabration 房间管理
+Collaboration 房间管理
 ==================
 
 是什么:房间与参与者的生命周期管理。
@@ -10,7 +10,7 @@ Collabration 房间管理
 
 存储说明:内存字典,进程级单例。后续可替换 SQLite/Redis,接口保持不变。
 
-Collabration Copyright (c) 2026 P0luz. All rights reserved.
+Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

@@ -1,5 +1,5 @@
 """
-Collabration 文件排队
+Collaboration 文件排队
 ==================
 
 是什么:文件级排队。约束 —— 同一文件同一时刻只能有一个 active holder,其余排队等待。
@@ -8,7 +8,7 @@ Collabration 文件排队
           把"激活锁并占用文件"的语义留在 locks 里(单一来源)。
 对外暴露:enqueue, promote_next, get_queue, get_all_queues,以及内部存储 _queues。
 
-Collabration Copyright (c) 2026 P0luz. All rights reserved.
+Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

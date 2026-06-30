@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.collabration import rooms
+from backend.collaboration import rooms
 
 
 @pytest.fixture(autouse=True)

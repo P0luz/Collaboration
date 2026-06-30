@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.collabration import git_gate, locks, queues, rooms
+from backend.collaboration import git_gate, locks, queues, rooms
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +29,7 @@ def test_no_lock_blocked():
     assert fb.blocked is True
     assert "a.py" in fb.blocked_files
     assert "没有 intent lock" in fb.human_message
-    assert fb.collabration_action["tool"] == "wait_for_clear"
+    assert fb.collaboration_action["tool"] == "wait_for_clear"
 
 
 def test_locked_by_other_blocked():
@@ -39,7 +39,7 @@ def test_locked_by_other_blocked():
     assert fb.blocked is True
     assert fb.holders[0]["owner"] == "Alice"
     assert "Alice" in fb.human_message
-    assert fb.collabration_action["args"]["files"] == ["a.py"]
+    assert fb.collaboration_action["args"]["files"] == ["a.py"]
 
 
 def test_mixed_only_blocked_files_reported():

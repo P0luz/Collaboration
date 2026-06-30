@@ -1,5 +1,5 @@
 """
-Collabration 策略规则(预留占桩)
+Collaboration 策略规则(预留占桩)
 =============================
 
 是什么:协作策略的可配置规则层(谁能改哪些目录、超时时长、最大并发锁等)。
@@ -10,7 +10,7 @@ Collabration 策略规则(预留占桩)
 
 里程碑:预留(M3+)。
 
-Collabration Copyright (c) 2026 P0luz. All rights reserved.
+Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

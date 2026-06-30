@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.collabration import locks, queues, rooms
+from backend.collaboration import locks, queues, rooms
 
 
 @pytest.fixture(autouse=True)

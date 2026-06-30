@@ -1,5 +1,5 @@
 """
-Collabration 审计导出(预留占桩)
+Collaboration 审计导出(预留占桩)
 =============================
 
 是什么:把 events 记录的审计事件导出/持久化,用于事后追溯与合规。
@@ -9,7 +9,7 @@ Collabration 审计导出(预留占桩)
 
 里程碑:预留。与 events.py 区别:events 是运行时记录,audit 是导出与长期留存。
 
-Collabration Copyright (c) 2026 P0luz. All rights reserved.
+Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
 """
 

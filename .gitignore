@@ -7,7 +7,7 @@ __pycache__/
 venv/
 
 # 私有原始文件,不进版本控制
-docs/collabration/secret/
+docs/collaboration/secret/
 
 # IDE / OS
 .vscode/
