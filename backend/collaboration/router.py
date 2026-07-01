@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
 from . import audit, dashboard, events, git_gate, locks, queues, rehearsal, relay, rooms
@@ -274,6 +274,18 @@ def api_get_events(room_id: str, limit: int = 50) -> dict:
 @router.get("/audit/{room_id}")
 def api_get_audit(room_id: str, limit: int = 50) -> dict:
     return {"audit": [asdict(e) for e in audit.get_call_logs(room_id, limit)]}
+
+
+@router.get("/audit/{room_id}/export")
+def api_export_audit(room_id: str, fmt: str = "jsonl") -> Response:
+    try:
+        payload = audit.export_calls(room_id, fmt=fmt)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    return Response(
+        content=payload + ("\n" if payload else ""),
+        media_type="application/x-ndjson",
+    )
 
 
 # ── Dashboard ──────────────────────────────────────────────────────────────
