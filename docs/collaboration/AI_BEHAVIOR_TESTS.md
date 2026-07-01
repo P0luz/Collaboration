@@ -28,5 +28,23 @@
 - `tests/collaboration/test_extend_lock.py` —— 扩展/部分冲突
 - `tests/collaboration/test_git_gate.py` —— hook 拦截决策
 - `tests/collaboration/test_router.py` —— 端到端 HTTP 流程
+- `tests/collaboration/test_behavior_script.py` —— 强制层行为脚本 CLI 验收
+
+## 强制层本地脚本
+
+M5 的第一层自动化入口:
+
+```powershell
+py -3.10 scripts/collaboration-behavior/forced_layer_checks.py
+py -3.10 scripts/collaboration-behavior/forced_layer_checks.py --json
+```
+
+脚本只创建临时 Git repo,不修改当前工作区。当前覆盖:
+
+- watcher 发现未声明改动并记录 `unclaimed_change`;
+- watcher 发现 Bob 改 Alice 持有的文件并记录 `locked_by_other`;
+- hook/check 阻止无锁 staged 文件;
+- hook/check 阻止被他人持有的 staged 文件;
+- push gate 可从房间状态识别 waiting lock。
 
 真实 AI 行为(是否真的遵守 1–6)需在集成阶段用真实 agent 跑通,属 M2 之后的验收。
