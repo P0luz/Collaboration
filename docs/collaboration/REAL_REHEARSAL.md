@@ -18,6 +18,18 @@ py -3.10 scripts/collaboration-behavior/rehearsal_report.py init reports/m6-rehe
 
 演练过程中填写报告里的 `duration_minutes`、`participants` 和每个场景的 `evidence`。完成后把每个场景的 `status` 改成 `pass` 或 `fail`。
 
+## 收集证据
+
+演练完成后可导出一份 evidence bundle,用于填写报告:
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/collaboration/rehearsal/<room_id>/evidence?limit=50
+```
+
+bundle 会整理 `room_setup`、`declare_conflict_wait`、`report_done_handoff`、`hook_blocked_recovery`
+四类建议证据,并保留原始 `events`、`audit`、`hook_feedback`。`collaborative_task_completed`
+和 `retrospective` 仍需人工填写。
+
 ## 演练步骤
 
 1. 准备房间
@@ -41,6 +53,7 @@ py -3.10 scripts/collaboration-behavior/rehearsal_report.py init reports/m6-rehe
 
 5. 复盘
    - 记录 Dashboard 可用性问题。
+   - 导出 `/rehearsal/<room_id>/evidence` evidence bundle。
    - 从 Dashboard 的 `Audit Log` 复制 declare/wait/report/hook 证据。
    - 从 Dashboard 的 `Hook Feedback` 复制 blocked 文件和恢复动作证据。
    - 记录冲突、等待、恢复是否清晰。

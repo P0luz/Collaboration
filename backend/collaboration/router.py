@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from . import audit, dashboard, events, git_gate, locks, queues, relay, rooms
+from . import audit, dashboard, events, git_gate, locks, queues, rehearsal, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -277,6 +277,16 @@ def api_dashboard(room_id: str) -> HTMLResponse:
     if data is None:
         raise HTTPException(404, "Room not found")
     return HTMLResponse(dashboard.render_dashboard_html(data))
+
+
+# ── Rehearsal Evidence ─────────────────────────────────────────────────────
+
+@router.get("/rehearsal/{room_id}/evidence")
+def api_rehearsal_evidence(room_id: str, limit: int = 50) -> dict:
+    data = rehearsal.build_rehearsal_evidence(room_id, limit=limit)
+    if data is None:
+        raise HTTPException(404, "Room not found")
+    return data
 
 
 # ── Relay ───────────────────────────────────────────────────────
