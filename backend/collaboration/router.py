@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from . import dashboard, events, git_gate, locks, queues, relay, rooms
+from . import audit, dashboard, events, git_gate, locks, queues, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -70,6 +70,7 @@ class ExtendLockRequest(BaseModel):
 class WaitForClearRequest(BaseModel):
     room_id: str
     files: list[str]
+    requester: str = ""
 
 
 class SendMessageRequest(BaseModel):
@@ -142,6 +143,15 @@ def api_declare_intent(req: DeclareIntentRequest) -> dict:
     events.record(req.room_id, event_type, req.owner, {
         "files": req.files, "intent": req.intent, "result": result["status"],
     })
+    audit.record_call(
+        req.room_id,
+        req.owner,
+        "declare_intent",
+        result["status"],
+        agent=req.agent,
+        files=req.files,
+        payload={"intent": req.intent, "lock_id": result.get("lock_id")},
+    )
     return result
 
 
@@ -153,6 +163,15 @@ def api_report_done(req: ReportDoneRequest) -> dict:
         events.record(lock.room_id, EventType.LOCK_RELEASED, lock.owner, {
             "lock_id": req.lock_id, "summary": req.summary,
         })
+        audit.record_call(
+            lock.room_id,
+            lock.owner,
+            "report_done",
+            result["status"],
+            agent=lock.agent,
+            files=lock.files,
+            payload={"lock_id": req.lock_id, "summary": req.summary},
+        )
     return result
 
 
@@ -165,6 +184,15 @@ def api_extend_lock(req: ExtendLockRequest) -> dict:
             "lock_id": req.lock_id, "additional_files": req.additional_files,
             "result": result["status"],
         })
+        audit.record_call(
+            lock.room_id,
+            lock.owner,
+            "extend_lock",
+            result["status"],
+            agent=lock.agent,
+            files=req.additional_files,
+            payload={"lock_id": req.lock_id, "reason": req.reason},
+        )
     return result
 
 
@@ -186,7 +214,16 @@ def api_wait_for_clear(req: WaitForClearRequest) -> dict:
                 "file": f, "status": "held",
                 "holder": holder.owner, "agent": holder.agent, "intent": holder.intent,
             })
-    return {"all_clear": all_clear, "files": statuses}
+    result = {"all_clear": all_clear, "files": statuses}
+    audit.record_call(
+        req.room_id,
+        req.requester,
+        "wait_for_clear",
+        "cleared" if all_clear else "held",
+        files=req.files,
+        payload={"files": statuses},
+    )
+    return result
 
 
 # ── Status ──────────────────────────────────────────────────────
@@ -217,6 +254,11 @@ def api_get_queue(room_id: str, file: str) -> dict:
 @router.get("/events/{room_id}")
 def api_get_events(room_id: str, limit: int = 50) -> dict:
     return {"events": [asdict(e) for e in events.get_events(room_id, limit)]}
+
+
+@router.get("/audit/{room_id}")
+def api_get_audit(room_id: str, limit: int = 50) -> dict:
+    return {"audit": [asdict(e) for e in audit.get_call_logs(room_id, limit)]}
 
 
 # ── Dashboard ──────────────────────────────────────────────────────────────
@@ -292,11 +334,26 @@ def api_hook_check(req: HookCheckRequest) -> dict:
     feedback = git_gate.build_hook_feedback(results)
 
     if not feedback.blocked:
+        audit.record_call(
+            req.room_id,
+            req.requester,
+            "hook_check",
+            "allowed",
+            files=req.staged_files,
+        )
         return {"blocked": False, "results": results}
 
     events.record(req.room_id, EventType.HOOK_BLOCKED, req.requester, {
         "blocked_files": feedback.blocked_files,
     })
+    audit.record_call(
+        req.room_id,
+        req.requester,
+        "hook_check",
+        "blocked",
+        files=feedback.blocked_files,
+        payload={"action": feedback.collaboration_action},
+    )
 
     return {
         "blocked": True,

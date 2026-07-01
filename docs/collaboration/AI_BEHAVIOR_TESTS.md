@@ -28,6 +28,7 @@
 - `tests/collaboration/test_extend_lock.py` —— 扩展/部分冲突
 - `tests/collaboration/test_git_gate.py` —— hook 拦截决策
 - `tests/collaboration/test_router.py` —— 端到端 HTTP 流程
+- `tests/collaboration/test_audit.py` —— MCP/API 调用日志验收
 - `tests/collaboration/test_behavior_script.py` —— 强制层行为脚本 CLI 验收
 - `tests/collaboration/test_prompt_acceptance_report.py` —— prompt 层验收报告 CLI 验收
 
@@ -63,3 +64,14 @@ py -3.10 scripts/collaboration-behavior/prompt_acceptance_report.py validate rep
 
 - `docs/collaboration/PROMPT_ACCEPTANCE.md`
 - `docs/collaboration/PROMPT_LAYER_REPORT_TEMPLATE.md`
+
+## MCP/API 调用日志
+
+prompt 层验收时,可以用 audit log 作为证据来源:
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/collaboration/audit/<room_id>?limit=20
+```
+
+日志会记录 `declare_intent`、`report_done`、`extend_lock`、`wait_for_clear`、`hook_check`
+等协作调用的 actor、agent、结果和文件列表。它只保存元数据,不保存源码内容。

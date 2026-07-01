@@ -4,10 +4,11 @@ Collaboration 数据模型
 
 是什么:Collaboration 全部领域数据结构的单一定义处。
 做什么:定义房间(Room)、参与者(Participant)、意图锁(IntentLock)、排队项(QueueEntry)、
-        事件(Event)、Hook 反馈(HookFeedback),以及两个枚举(LockStatus / EventType)。
+        事件(Event)、调用审计(AuditRecord)、Hook 反馈(HookFeedback),
+        以及两个枚举(LockStatus / EventType)。
 不做什么:不含任何业务逻辑(创建/冲突/排队逻辑分别在 rooms/locks/queues 里);不做持久化。
-对外暴露:LockStatus, EventType, Room, Participant, IntentLock, QueueEntry, Event, HookFeedback,
-          以及工具函数 now_iso()。
+对外暴露:LockStatus, EventType, Room, Participant, IntentLock, QueueEntry, Event,
+          AuditRecord, HookFeedback,以及工具函数 now_iso()。
 
 设计说明:时间统一用 UTC aware 的 ISO8601 字符串存储(now_iso),避免 naive/aware 比较出错。
 
@@ -122,6 +123,21 @@ class Event:
     room_id: str = ""
     event_type: EventType = EventType.INTENT_DECLARED
     actor: str = ""
+    payload: dict = field(default_factory=dict)
+    created_at: str = field(default_factory=now_iso)
+
+
+@dataclass
+class AuditRecord:
+    """AI/MCP/API 调用日志,用于 prompt 层验收和长期审计。"""
+
+    audit_id: str = field(default_factory=lambda: f"audit_{uuid.uuid4().hex[:10]}")
+    room_id: str = ""
+    actor: str = ""
+    agent: str = ""
+    tool: str = ""
+    result: str = ""
+    files: list[str] = field(default_factory=list)
     payload: dict = field(default_factory=dict)
     created_at: str = field(default_factory=now_iso)
 
