@@ -64,7 +64,11 @@ class Room:
     room_id: str
     repo_remote: str = ""
     participants: list[str] = field(default_factory=list)
-    max_participants: int = 10
+    plan: str = "free"
+    max_participants: int = 2
+    relay_mode: str = "local"
+    audit_retention_days: int = 30
+    policy_rules_enabled: bool = True
     created_at: str = field(default_factory=now_iso)
 
 

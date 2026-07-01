@@ -15,6 +15,11 @@ def reset_state():
 def test_create_room():
     room = rooms.create_room("test", repo_remote="https://github.com/test/repo.git")
     assert room.room_id == "test"
+    assert room.plan == "free"
+    assert room.max_participants == 2
+    assert room.relay_mode == "local"
+    assert room.audit_retention_days == 30
+    assert room.policy_rules_enabled is True
     assert rooms.get_room("test") is room
 
 
@@ -38,6 +43,27 @@ def test_join_full_room():
     r = rooms.join_room("test", "Bob")
     assert r["status"] == "error"
     assert "full" in r["message"].lower()
+
+
+def test_team_plan_allows_third_participant():
+    rooms.create_room("test", plan="team")
+    rooms.join_room("test", "Alice")
+    rooms.join_room("test", "Bob")
+    r = rooms.join_room("test", "Cara")
+    assert r["status"] == "joined"
+    assert rooms.get_room("test").max_participants == 10
+
+
+def test_room_accepts_commercial_policy_overrides():
+    room = rooms.create_room(
+        "test",
+        plan="pro",
+        max_participants=12,
+        relay_mode="self_hosted",
+    )
+    assert room.plan == "pro"
+    assert room.max_participants == 12
+    assert room.relay_mode == "self_hosted"
 
 
 def test_rejoin_same_user_not_full():

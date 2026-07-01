@@ -35,7 +35,11 @@ router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
 class CreateRoomRequest(BaseModel):
     room_id: str
     repo_remote: str = ""
-    max_participants: int = 10
+    max_participants: int | None = None
+    plan: str = "free"
+    relay_mode: str | None = None
+    audit_retention_days: int | None = None
+    policy_rules_enabled: bool | None = None
 
 
 class JoinRoomRequest(BaseModel):
@@ -103,7 +107,18 @@ class RelayPublishRequest(BaseModel):
 
 @router.post("/room/create")
 def api_create_room(req: CreateRoomRequest) -> dict:
-    room = rooms.create_room(req.room_id, req.repo_remote, req.max_participants)
+    try:
+        room = rooms.create_room(
+            req.room_id,
+            req.repo_remote,
+            req.max_participants,
+            plan=req.plan,
+            relay_mode=req.relay_mode,
+            audit_retention_days=req.audit_retention_days,
+            policy_rules_enabled=req.policy_rules_enabled,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
     events.record(room.room_id, EventType.ROOM_CREATED, "system")
     return {"status": "created", "room": asdict(room)}
 

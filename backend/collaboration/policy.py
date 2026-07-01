@@ -1,14 +1,15 @@
 """
-Collaboration 策略规则(预留占桩)
-=============================
+Collaboration policy rules
+==========================
 
-是什么:协作策略的可配置规则层(谁能改哪些目录、超时时长、最大并发锁等)。
-做什么:【未实现】计划:把当前硬编码的规则(idle_timeout=300、max_participants=10 等)
-        集中到可配置策略,按房间/仓库定制。
-不做什么:当前阶段规则散落在 schema 默认值里;本模块仅占位,标记未来收敛方向。
-对外暴露:get_policy / set_policy(当前为显式 NotImplemented 占位)。
+What it is: the configurable policy layer for plan defaults and room limits.
+What it does: resolves room policy fields such as plan, participant cap,
+              relay mode, audit retention, and policy-rule enablement.
+What it does not do: billing, authentication, entitlement checks, or persistence.
+Exports: resolve_room_policy, get_plan_policy, get_policy, set_policy.
 
-里程碑:预留(M3+)。
+M7 note: this is commercial-readiness metadata only. It reserves policy fields
+without implementing payment or account management.
 
 Collaboration Copyright (c) 2026 P0luz. All rights reserved.
 Proprietary. Commercial license required for any use; see LICENSE.
@@ -16,12 +17,102 @@ Proprietary. Commercial license required for any use; see LICENSE.
 
 from __future__ import annotations
 
+from typing import Optional
+
+
+PLAN_POLICIES: dict[str, dict] = {
+    "free": {
+        "max_participants": 2,
+        "relay_mode": "local",
+        "audit_retention_days": 30,
+        "policy_rules_enabled": True,
+    },
+    "team": {
+        "max_participants": 10,
+        "relay_mode": "saas",
+        "audit_retention_days": 90,
+        "policy_rules_enabled": True,
+    },
+    "pro": {
+        "max_participants": 10,
+        "relay_mode": "saas",
+        "audit_retention_days": 180,
+        "policy_rules_enabled": True,
+    },
+    "enterprise": {
+        "max_participants": 50,
+        "relay_mode": "private",
+        "audit_retention_days": 365,
+        "policy_rules_enabled": True,
+    },
+}
+
+
+def get_plan_policy(plan: str = "free") -> dict:
+    """Return a copy of the policy defaults for a known plan."""
+    normalized = (plan or "free").lower()
+    if normalized not in PLAN_POLICIES:
+        raise ValueError(f"unknown plan: {plan}")
+    return dict(PLAN_POLICIES[normalized])
+
+
+def resolve_room_policy(
+    plan: str = "free",
+    max_participants: Optional[int] = None,
+    relay_mode: str | None = None,
+    audit_retention_days: int | None = None,
+    policy_rules_enabled: bool | None = None,
+) -> dict:
+    """Resolve plan defaults plus explicit room-level overrides."""
+    normalized = (plan or "free").lower()
+    resolved = get_plan_policy(normalized)
+    if max_participants is not None:
+        if max_participants <= 0:
+            raise ValueError("max_participants must be positive")
+        resolved["max_participants"] = max_participants
+    if relay_mode:
+        resolved["relay_mode"] = relay_mode
+    if audit_retention_days is not None:
+        if audit_retention_days <= 0:
+            raise ValueError("audit_retention_days must be positive")
+        resolved["audit_retention_days"] = audit_retention_days
+    if policy_rules_enabled is not None:
+        resolved["policy_rules_enabled"] = policy_rules_enabled
+    return {"plan": normalized, **resolved}
+
 
 def get_policy(room_id: str) -> dict:
-    """取房间策略(预留)。当前未实现。"""
-    raise NotImplementedError("policy 为预留模块,尚未实现")
+    """Return the active policy metadata for a room."""
+    from . import rooms
+
+    room = rooms.get_room(room_id)
+    if room is None:
+        return resolve_room_policy()
+    return {
+        "plan": room.plan,
+        "max_participants": room.max_participants,
+        "relay_mode": room.relay_mode,
+        "audit_retention_days": room.audit_retention_days,
+        "policy_rules_enabled": room.policy_rules_enabled,
+    }
 
 
 def set_policy(room_id: str, policy: dict) -> None:
-    """设置房间策略(预留)。当前未实现。"""
-    raise NotImplementedError("policy 为预留模块,尚未实现")
+    """Update policy metadata on an existing in-memory room."""
+    from . import rooms
+
+    room = rooms.get_room(room_id)
+    if room is None:
+        raise ValueError(f"room not found: {room_id}")
+    resolved = resolve_room_policy(
+        plan=policy.get("plan", room.plan),
+        max_participants=policy.get("max_participants", room.max_participants),
+        relay_mode=policy.get("relay_mode", room.relay_mode),
+        audit_retention_days=policy.get("audit_retention_days", room.audit_retention_days),
+        policy_rules_enabled=policy.get("policy_rules_enabled", room.policy_rules_enabled),
+    )
+    room.plan = resolved["plan"]
+    room.max_participants = resolved["max_participants"]
+    room.relay_mode = resolved["relay_mode"]
+    room.audit_retention_days = resolved["audit_retention_days"]
+    room.policy_rules_enabled = resolved["policy_rules_enabled"]

@@ -97,6 +97,28 @@ def test_status_404(client):
     assert client.get("/api/collaboration/status/ghost").status_code == 404
 
 
+def test_create_room_accepts_policy_fields(client):
+    created = client.post("/api/collaboration/room/create", json={
+        "room_id": "R",
+        "repo_remote": "git@example.com:team/repo.git",
+        "plan": "team",
+        "relay_mode": "saas",
+    }).json()
+
+    assert created["status"] == "created"
+    assert created["room"]["plan"] == "team"
+    assert created["room"]["max_participants"] == 10
+    assert created["room"]["relay_mode"] == "saas"
+    assert created["room"]["audit_retention_days"] == 90
+
+    for name in ["Alice", "Bob", "Cara"]:
+        joined = client.post("/api/collaboration/room/join", json={
+            "room_id": "R",
+            "name": name,
+        }).json()
+        assert joined["status"] == "joined"
+
+
 def test_extend_via_api(client):
     client.post("/api/collaboration/room/create", json={"room_id": "R"})
     d = client.post("/api/collaboration/intent/declare", json={

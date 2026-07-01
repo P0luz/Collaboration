@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+from . import policy
 from .schema import Participant, Room, now_iso
 
 # 内存存储(M2 阶段;后续可换 SQLite/Redis)
@@ -25,9 +26,32 @@ _rooms: dict[str, Room] = {}
 _participants: dict[str, dict[str, Participant]] = {}  # room_id -> {name: Participant}
 
 
-def create_room(room_id: str, repo_remote: str = "", max_participants: int = 10) -> Room:
+def create_room(
+    room_id: str,
+    repo_remote: str = "",
+    max_participants: int | None = None,
+    plan: str = "free",
+    relay_mode: str | None = None,
+    audit_retention_days: int | None = None,
+    policy_rules_enabled: bool | None = None,
+) -> Room:
     """创建房间。若已存在同名房间则覆盖其元数据并清空参与者表(显式幂等)。"""
-    room = Room(room_id=room_id, repo_remote=repo_remote, max_participants=max_participants)
+    room_policy = policy.resolve_room_policy(
+        plan=plan,
+        max_participants=max_participants,
+        relay_mode=relay_mode,
+        audit_retention_days=audit_retention_days,
+        policy_rules_enabled=policy_rules_enabled,
+    )
+    room = Room(
+        room_id=room_id,
+        repo_remote=repo_remote,
+        plan=room_policy["plan"],
+        max_participants=room_policy["max_participants"],
+        relay_mode=room_policy["relay_mode"],
+        audit_retention_days=room_policy["audit_retention_days"],
+        policy_rules_enabled=room_policy["policy_rules_enabled"],
+    )
     _rooms[room_id] = room
     _participants[room_id] = {}
     return room
