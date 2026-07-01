@@ -117,7 +117,7 @@ def _complete_report() -> dict:
             "dashboard_url": "http://localhost:8080/api/collaboration/dashboard/R",
         },
         "collaborative_task_completed": {
-            "task_summary": "small Pair Mesh doc change",
+            "task_summary": "small Collaboration doc change",
             "commit_or_pr": "abc123",
             "test_command": "py -3.10 -m pytest tests/ -q",
         },

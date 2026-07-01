@@ -6,7 +6,7 @@ What it is: a tiny read-only projection layer for the M3 dashboard.
 What it does: combines room, participant, lock, queue, event, audit, hook,
               and relay state into one payload and renders a minimal HTML view.
 What it does not do: mutate collaboration state, authenticate users, or replace
-                     the future Savoir-Fair frontend integration.
+                     the future frontend integration.
 Exports: build_dashboard_data, render_dashboard_html.
 
 Collaboration Copyright (c) 2026 P0luz. All rights reserved.

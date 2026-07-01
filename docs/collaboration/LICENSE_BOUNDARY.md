@@ -24,3 +24,14 @@ Proprietary. Commercial license required for any use; see LICENSE.
 - 新增源码文件 → 加上述文件头。
 - 若将来引入任何第三方源码 → 保留其原始许可头,并在 `THIRD_PARTY_NOTICES.md` 登记,不混用许可。
 - 不确定某文件归属时,**停下来确认**,不擅自归类。
+
+## 品牌边界检查
+
+提交前可运行:
+
+```powershell
+py -3.10 scripts/collaboration-compliance/brand_boundary_check.py
+```
+
+该脚本会扫描产品表面与源码中的旧品牌或第三方名称。`plan.md` 和 `requirements.txt`
+保留为历史决策/否定性边界说明,默认不参与违规判断。

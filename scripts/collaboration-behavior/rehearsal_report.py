@@ -2,7 +2,7 @@
 """
 M6 real collaboration rehearsal report helper.
 
-What it is: a tiny CLI for recording 60-90 minute real Pair Mesh rehearsals.
+What it is: a tiny CLI for recording 60-90 minute real Collaboration rehearsals.
 What it does: creates a JSON report template and validates completed evidence.
 What it does not do: drive agents, mutate the repo, or call Collaboration APIs.
 

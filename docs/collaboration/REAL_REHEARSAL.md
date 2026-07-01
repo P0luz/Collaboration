@@ -1,6 +1,6 @@
 # M6 真实协作演练
 
-M6 用一次 60-90 分钟真实协作来验证 Pair Mesh 是否能支撑多人 + 多 AI 的日常开发流。它不是单元测试,而是产品体验验收:人、agent、Dashboard、hook、audit log 要一起跑通。
+M6 用一次 60-90 分钟真实协作来验证 Collaboration 是否能支撑多人 + 多 AI 的日常开发流。它不是单元测试,而是产品体验验收:人、agent、Dashboard、hook、audit log 要一起跑通。
 
 ## 目标
 
