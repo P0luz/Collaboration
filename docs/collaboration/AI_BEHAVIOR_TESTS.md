@@ -77,3 +77,17 @@ Invoke-RestMethod http://localhost:8080/api/collaboration/audit/<room_id>?limit=
 
 日志会记录 `declare_intent`、`report_done`、`extend_lock`、`wait_for_clear`、`hook_check`
 等协作调用的 actor、agent、结果和文件列表。它只保存元数据,不保存源码内容。
+
+## M6 真实演练报告
+
+真实协作演练入口:
+
+```powershell
+py -3.10 scripts/collaboration-behavior/rehearsal_report.py init reports/m6-rehearsal.json --room <room_id> --operator <name> --participant "WanShi:Codex" --participant "Tingyi:Claude Code"
+py -3.10 scripts/collaboration-behavior/rehearsal_report.py validate reports/m6-rehearsal.json --json
+```
+
+演练 runbook 和模板说明见:
+
+- `docs/collaboration/REAL_REHEARSAL.md`
+- `docs/collaboration/M6_REHEARSAL_TEMPLATE.md`
