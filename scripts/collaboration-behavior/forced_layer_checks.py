@@ -23,6 +23,7 @@ import sys
 import tempfile
 import warnings
 from dataclasses import dataclass, asdict
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 
@@ -38,7 +39,7 @@ warnings.filterwarnings(
 
 from fastapi.testclient import TestClient
 
-from backend.collaboration import events, locks, queues, relay, rooms, watcher
+from backend.collaboration import audit, events, locks, queues, relay, rooms, watcher
 from backend.collaboration.app import app
 from backend.collaboration.schema import EventType
 
@@ -61,6 +62,8 @@ def run_checks() -> dict:
         _run_scenario("hook_blocks_no_lock", _hook_blocks_no_lock),
         _run_scenario("hook_blocks_locked_by_other", _hook_blocks_locked_by_other),
         _run_scenario("push_gate_detects_waiting_lock", _push_gate_detects_waiting_lock),
+        _run_scenario("idle_timeout_releases_unreported_lock", _idle_timeout_releases_unreported_lock),
+        _run_scenario("partial_conflict_blocks_conflict_file", _partial_conflict_blocks_conflict_file),
     ]
     passed = sum(1 for item in scenarios if item.status == "pass")
     failed = len(scenarios) - passed
@@ -200,6 +203,82 @@ def _push_gate_detects_waiting_lock() -> dict:
         }
 
 
+def _idle_timeout_releases_unreported_lock() -> dict:
+    with _clean_state():
+        rooms.create_room(ROOM_ID)
+        first = locks.declare_intent(
+            ROOM_ID,
+            "Alice",
+            "Claude Code",
+            ["src/stale.py"],
+            "start work but never report done",
+        )
+        stale = locks.get_lock(first["lock_id"])
+        stale.idle_timeout_seconds = 30
+        stale.last_activity = (
+            datetime.now(timezone.utc) - timedelta(seconds=90)
+        ).isoformat()
+
+        takeover = locks.declare_intent(
+            ROOM_ID,
+            "Bob",
+            "Codex",
+            ["src/stale.py"],
+            "take over after timeout",
+        )
+        holder = locks.get_file_holder(ROOM_ID, "src/stale.py")
+
+        assert stale.status.value == "expired"
+        assert takeover["status"] == "clear"
+        assert holder.owner == "Bob"
+        return {
+            "file": "src/stale.py",
+            "expired_owner": stale.owner,
+            "new_holder": holder.owner,
+        }
+
+
+def _partial_conflict_blocks_conflict_file() -> dict:
+    with _clean_state():
+        client = _client_with_room()
+        client.post("/api/collaboration/intent/declare", json={
+            "room_id": ROOM_ID,
+            "owner": "Alice",
+            "agent": "Claude Code",
+            "files": ["src/main.py"],
+            "intent": "own main",
+        })
+        bob = client.post("/api/collaboration/intent/declare", json={
+            "room_id": ROOM_ID,
+            "owner": "Bob",
+            "agent": "Codex",
+            "files": ["src/other.py"],
+            "intent": "own other",
+        }).json()
+
+        extended = client.post("/api/collaboration/intent/extend", json={
+            "lock_id": bob["lock_id"],
+            "additional_files": ["src/main.py", "src/bob_test.py"],
+            "reason": "need implementation and test",
+        }).json()
+        response = client.post("/api/collaboration/hook/check", json={
+            "room_id": ROOM_ID,
+            "requester": "Bob",
+            "staged_files": ["src/main.py", "src/bob_test.py"],
+        }).json()
+
+        assert extended["status"] == "partial_conflict"
+        assert extended["extended_files"] == ["src/bob_test.py"]
+        assert extended["conflict_files"][0]["file"] == "src/main.py"
+        assert response["blocked"] is True
+        assert response["COLLABORATION_ACTION"]["args"]["files"] == ["src/main.py"]
+        return {
+            "extended_files": extended["extended_files"],
+            "blocked_files": response["COLLABORATION_ACTION"]["args"]["files"],
+            "holder": response["results"][0]["holder"],
+        }
+
+
 class _clean_state:
     def __enter__(self):
         rooms._rooms.clear()
@@ -207,6 +286,7 @@ class _clean_state:
         locks._locks.clear()
         locks._file_holders.clear()
         queues._queues.clear()
+        audit._call_logs.clear()
         events._events.clear()
         relay._connections.clear()
         relay._event_streams.clear()

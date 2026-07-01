@@ -48,6 +48,8 @@ py -3.10 scripts/collaboration-behavior/forced_layer_checks.py --json
 - hook/check 阻止无锁 staged 文件;
 - hook/check 阻止被他人持有的 staged 文件;
 - push gate 可从房间状态识别 waiting lock。
+- 未 `report_done` 的 stale lock 在 idle timeout 后释放,后续声明可接管;
+- `extend_lock` 返回 `partial_conflict` 后,冲突文件仍会被 hook/check 阻止。
 
 真实 AI 行为(是否真的遵守 1–6)需在集成阶段用真实 agent 跑通,属 M2 之后的验收。
 
