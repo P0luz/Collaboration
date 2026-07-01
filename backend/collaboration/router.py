@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
-from . import audit, dashboard, events, git_gate, locks, queues, rehearsal, relay, rooms
+from . import audit, capabilities, dashboard, events, git_gate, locks, queues, rehearsal, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -286,6 +286,14 @@ def api_export_audit(room_id: str, fmt: str = "jsonl") -> Response:
         content=payload + ("\n" if payload else ""),
         media_type="application/x-ndjson",
     )
+
+
+@router.get("/capabilities/{room_id}")
+def api_capabilities(room_id: str) -> dict:
+    data = capabilities.build_capabilities(room_id)
+    if data is None:
+        raise HTTPException(404, "Room not found")
+    return data
 
 
 # ── Dashboard ──────────────────────────────────────────────────────────────
