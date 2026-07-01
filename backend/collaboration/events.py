@@ -28,9 +28,23 @@ def record(room_id: str, event_type: EventType, actor: str, payload: Optional[di
     bucket.append(event)
     if len(bucket) > _MAX_EVENTS:
         del bucket[: len(bucket) - _MAX_EVENTS]
+    _publish_to_relay(event)
     return event
 
 
 def get_events(room_id: str, limit: int = 50) -> list[Event]:
     """取房间最近 limit 条事件,最新在前(倒序)。"""
     return list(reversed(_events.get(room_id, [])[-limit:]))
+
+
+def _publish_to_relay(event: Event) -> None:
+    """把事件元数据广播给 relay。relay 未连接时会显式跳过。"""
+    from . import relay
+
+    relay.publish(event.room_id, {
+        "event_id": event.event_id,
+        "type": event.event_type.value,
+        "actor": event.actor,
+        "payload": event.payload,
+        "created_at": event.created_at,
+    })
