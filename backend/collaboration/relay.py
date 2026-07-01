@@ -62,6 +62,22 @@ def disconnect(room_id: str) -> dict:
     return {"status": "disconnected", "room_id": room_id}
 
 
+def connection_status(room_id: str) -> dict:
+    """返回 relay 连接元数据,供 Dashboard 等只读状态面板使用。"""
+    connection = _connections.get(room_id)
+    last_seq = _next_seq.get(room_id, 1) - 1
+    if connection is None:
+        return {
+            "connected": False,
+            "room_id": room_id,
+            "relay_url": "",
+            "mode": "none",
+            "connected_at": "",
+            "last_seq": last_seq,
+        }
+    return {"connected": True, **asdict(connection), "last_seq": last_seq}
+
+
 def publish(room_id: str, event: dict) -> dict:
     """发布一条事件元数据。未 connect 的房间显式跳过,避免误以为已同步。"""
     if room_id not in _connections:

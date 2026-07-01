@@ -21,9 +21,10 @@ from __future__ import annotations
 from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from . import events, git_gate, locks, queues, relay, rooms
+from . import dashboard, events, git_gate, locks, queues, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -216,6 +217,24 @@ def api_get_queue(room_id: str, file: str) -> dict:
 @router.get("/events/{room_id}")
 def api_get_events(room_id: str, limit: int = 50) -> dict:
     return {"events": [asdict(e) for e in events.get_events(room_id, limit)]}
+
+
+# ── Dashboard ──────────────────────────────────────────────────────────────
+
+@router.get("/dashboard/{room_id}/data")
+def api_dashboard_data(room_id: str, limit: int = 25) -> dict:
+    data = dashboard.build_dashboard_data(room_id, event_limit=limit)
+    if data is None:
+        raise HTTPException(404, "Room not found")
+    return data
+
+
+@router.get("/dashboard/{room_id}", response_class=HTMLResponse)
+def api_dashboard(room_id: str) -> HTMLResponse:
+    data = dashboard.build_dashboard_data(room_id)
+    if data is None:
+        raise HTTPException(404, "Room not found")
+    return HTMLResponse(dashboard.render_dashboard_html(data))
 
 
 # ── Relay ───────────────────────────────────────────────────────
