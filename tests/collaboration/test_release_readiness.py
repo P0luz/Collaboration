@@ -46,17 +46,22 @@ def test_release_readiness_gate_runs_core_checks(readiness_module):
     report = readiness_module.run_readiness(Path.cwd(), include_pytest=False)
 
     assert report["status"] == "pass"
-    assert report["summary"] == {"passed": 4, "failed": 0}
+    assert report["summary"] == {"passed": 5, "failed": 0}
     assert [item["name"] for item in report["checks"]] == [
         "required_docs",
         "app_health",
         "self_hosted_relay_smoke",
+        "deployment_packaging",
         "brand_boundary",
     ]
     assert "README.md" in report["checks"][0]["details"]["present"]
+    assert "docs/collaboration/DEPLOYMENT.md" in report["checks"][0]["details"]["present"]
     assert report["checks"][1]["details"] == {
         "service": "collaboration",
         "status": "ok",
+    }
+    assert report["checks"][3]["details"] == {
+        "files": ["Dockerfile", "docker-compose.yml", ".dockerignore"],
     }
 
 
@@ -67,6 +72,7 @@ def test_release_readiness_cli_prints_json(readiness_module, capsys):
     payload = json.loads(capsys.readouterr().out)
     assert payload["status"] == "pass"
     assert payload["checks"][2]["name"] == "self_hosted_relay_smoke"
+    assert payload["checks"][3]["name"] == "deployment_packaging"
 
 
 def test_release_readiness_script_runs_from_file_path():

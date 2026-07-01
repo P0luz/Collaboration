@@ -45,6 +45,7 @@ REQUIRED_DOCS = [
     "docs/collaboration/GIT_WORKFLOW.md",
     "docs/collaboration/MCP_RULES.md",
     "docs/collaboration/SELF_HOSTED_RELAY.md",
+    "docs/collaboration/DEPLOYMENT.md",
     "docs/collaboration/RELEASE_READINESS.md",
     "docs/collaboration/LICENSE_BOUNDARY.md",
 ]
@@ -64,6 +65,7 @@ def run_readiness(root: Path, *, include_pytest: bool = False) -> dict[str, Any]
         _run_check("required_docs", lambda: _check_required_docs(root)),
         _run_check("app_health", _check_app_health),
         _run_check("self_hosted_relay_smoke", lambda: _check_self_hosted_relay(root)),
+        _run_check("deployment_packaging", lambda: _check_deployment_packaging(root)),
         _run_check("brand_boundary", lambda: _check_brand_boundary(root)),
     ]
     if include_pytest:
@@ -154,6 +156,21 @@ def _check_brand_boundary(root: Path) -> dict[str, Any]:
     if report["status"] != "pass":
         raise AssertionError(json.dumps(report["violations"], ensure_ascii=False))
     return report["summary"]
+
+
+def _check_deployment_packaging(root: Path) -> dict[str, Any]:
+    files = ["Dockerfile", "docker-compose.yml", ".dockerignore"]
+    missing = [relative for relative in files if not (root / relative).is_file()]
+    if missing:
+        raise AssertionError(f"missing deployment files: {', '.join(missing)}")
+
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+    compose = (root / "docker-compose.yml").read_text(encoding="utf-8")
+    if "backend.collaboration.app:app" not in dockerfile:
+        raise AssertionError("Dockerfile does not start the Collaboration app")
+    if '"8080:8080"' not in compose:
+        raise AssertionError("compose file does not publish port 8080")
+    return {"files": files}
 
 
 def _check_pytest(root: Path) -> dict[str, Any]:

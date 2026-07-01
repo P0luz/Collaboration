@@ -1,0 +1,19 @@
+services:
+  collaboration:
+    build: .
+    image: collaboration:local
+    ports:
+      - "8080:8080"
+    environment:
+      COLLABORATION_ROOM: Collaboration
+      COLLABORATION_URL: http://localhost:8080
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8080/', timeout=5)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

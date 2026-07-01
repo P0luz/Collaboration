@@ -32,6 +32,12 @@ Before handing the project to another user, agent, or deployment target, run:
 py -3.10 scripts/collaboration-release/readiness_check.py --with-pytest --json
 ```
 
+Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
 For a self-hosted relay smoke check against a running API:
 
 ```powershell
@@ -47,6 +53,7 @@ py -3.10 scripts/collaboration-relay/self_hosted_smoke.py `
 - [Git Workflow](docs/collaboration/GIT_WORKFLOW.md)
 - [MCP Rules](docs/collaboration/MCP_RULES.md)
 - [Self-Hosted Relay](docs/collaboration/SELF_HOSTED_RELAY.md)
+- [Deployment](docs/collaboration/DEPLOYMENT.md)
 - [Release Readiness](docs/collaboration/RELEASE_READINESS.md)
 - [License Boundary](docs/collaboration/LICENSE_BOUNDARY.md)
 
