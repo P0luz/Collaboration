@@ -54,6 +54,9 @@ def test_full_flow(client):
     assert len(st["active_locks"]) == 1
     assert st["active_locks"][0]["owner"] == "Alice"
     assert st["active_locks"][0]["status"] == "active"  # Enum 已序列化成字符串
+    assert len(st["waiting_locks"]) == 1
+    assert st["waiting_locks"][0]["owner"] == "Bob"
+    assert st["waiting_locks"][0]["status"] == "waiting"
     assert "src/main.py" in st["queues"]
 
     # wait_for_clear:Bob 等的文件仍被 Alice 占

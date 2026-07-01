@@ -19,10 +19,8 @@ if [ -z "$RESPONSE" ]; then
     exit 1
 fi
 
-# status 端点的 active_locks 只含 active;waiting 锁需单独从全量状态判断。
-# 这里通过 /status 暂只反映 active;waiting 计数由专门字段提供时再扩展。
-# 当前实现:检查 active_locks 中是否混入 waiting(防御式;正常不会)。
-WAITING=$(echo "$RESPONSE" | jq '[.active_locks[]? | select(.status == "waiting")] | length')
+# status 端点显式返回 waiting_locks;字段缺失时按空数组处理,兼容旧服务。
+WAITING=$(echo "$RESPONSE" | jq '(.waiting_locks // []) | length')
 
 if [ "$WAITING" != "null" ] && [ "$WAITING" -gt 0 ] 2>/dev/null; then
     echo ""

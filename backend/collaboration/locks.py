@@ -11,6 +11,7 @@ Collaboration 意图锁核心
   - _expire_stale_locks:空闲超时自动过期。
 不做什么:不管房间生命周期(rooms);队列存储在 queues,本模块只通过 _activate_lock 回调被 queues 调用。
 对外暴露:declare_intent, report_done, extend_lock, touch_lock, get_lock, get_active_locks,
+          get_waiting_locks,
           get_file_holder, check_files_locked, _activate_lock(供 queues 提升时调用),
           以及内部存储 _locks / _file_holders。
 
@@ -212,6 +213,11 @@ def get_lock(lock_id: str) -> Optional[IntentLock]:
 def get_active_locks(room_id: str) -> list[IntentLock]:
     """取房间内所有 active 锁。"""
     return [l for l in _locks.values() if l.room_id == room_id and l.status == LockStatus.ACTIVE]
+
+
+def get_waiting_locks(room_id: str) -> list[IntentLock]:
+    """取房间内所有 waiting 锁,供状态查询和 push 闸门判断未解决冲突。"""
+    return [l for l in _locks.values() if l.room_id == room_id and l.status == LockStatus.WAITING]
 
 
 def get_file_holder(room_id: str, file: str) -> Optional[IntentLock]:

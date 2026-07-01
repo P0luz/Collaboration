@@ -184,6 +184,7 @@ def api_check_status(room_id: str) -> dict:
         "room": asdict(room),
         "participants": [asdict(p) for p in rooms.get_participants(room_id)],
         "active_locks": [asdict(l) for l in locks.get_active_locks(room_id)],
+        "waiting_locks": [asdict(l) for l in locks.get_waiting_locks(room_id)],
         "queues": {
             file: [asdict(e) for e in entries]
             for file, entries in queues.get_all_queues(room_id).items()
