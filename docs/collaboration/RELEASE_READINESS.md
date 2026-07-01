@@ -23,6 +23,7 @@ py -3.10 scripts/collaboration-release/readiness_check.py --with-pytest --json
 - required user and operator docs exist
 - FastAPI health endpoint returns `{"service": "collaboration", "status": "ok"}`
 - self-hosted relay smoke flow passes in-process
+- Docker deployment packaging is present
 - brand-boundary scan passes
 - optional pytest suite passes
 
@@ -32,13 +33,14 @@ py -3.10 scripts/collaboration-release/readiness_check.py --with-pytest --json
 {
   "status": "pass",
   "summary": {
-    "passed": 4,
+    "passed": 5,
     "failed": 0
   },
   "checks": [
     {"name": "required_docs", "status": "pass"},
     {"name": "app_health", "status": "pass"},
     {"name": "self_hosted_relay_smoke", "status": "pass"},
+    {"name": "deployment_packaging", "status": "pass"},
     {"name": "brand_boundary", "status": "pass"}
   ]
 }
@@ -47,6 +49,7 @@ py -3.10 scripts/collaboration-release/readiness_check.py --with-pytest --json
 ## Deployment Notes
 
 - Run the full gate before pushing release or handoff commits.
+- `Dockerfile`, `docker-compose.yml`, and `.dockerignore` are part of the gate.
 - Use the self-hosted relay smoke script against the actual API URL after the
   service is running.
 - Keep relay payloads limited to room state, lock state, event metadata, and
