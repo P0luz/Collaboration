@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.collaboration import events, locks, queues, rooms
+from backend.collaboration import events, locks, queues, relay, rooms
 from backend.collaboration.app import app
 
 
@@ -15,6 +15,9 @@ def reset_state():
     locks._file_holders.clear()
     queues._queues.clear()
     events._events.clear()
+    relay._connections.clear()
+    relay._event_streams.clear()
+    relay._next_seq.clear()
     yield
 
 
@@ -104,3 +107,55 @@ def test_extend_via_api(client):
     }).json()
     assert ext["status"] == "extended"
     assert "b.py" in ext["files"]
+
+
+def test_relay_http_flow(client):
+    client.post("/api/collaboration/room/create", json={"room_id": "R"})
+    client.post("/api/collaboration/room/join", json={
+        "room_id": "R", "name": "Alice", "agent": "Codex",
+    })
+
+    connected = client.post("/api/collaboration/relay/connect", json={
+        "room_id": "R", "relay_url": "local://memory",
+    }).json()
+    assert connected["status"] == "connected"
+    assert connected["mode"] == "local"
+
+    client.post("/api/collaboration/message", json={
+        "room_id": "R", "sender": "Alice", "message": "hello",
+    })
+    stream = client.get("/api/collaboration/relay/events/R?since=0").json()
+    assert stream["last_seq"] == 1
+    assert stream["events"][0]["event"]["type"] == "message_sent"
+    assert stream["events"][0]["event"]["payload"] == {"message": "hello"}
+
+    snapshot = client.get("/api/collaboration/relay/snapshot/R").json()
+    assert snapshot["room"]["room_id"] == "R"
+    assert snapshot["participants"][0]["name"] == "Alice"
+
+    disconnected = client.post("/api/collaboration/relay/disconnect", json={"room_id": "R"}).json()
+    assert disconnected == {"status": "disconnected", "room_id": "R"}
+
+
+def test_relay_http_publish_accepts_remote_event(client):
+    client.post("/api/collaboration/room/create", json={"room_id": "R"})
+    client.post("/api/collaboration/relay/connect", json={
+        "room_id": "R", "relay_url": "local://memory",
+    })
+
+    published = client.post("/api/collaboration/relay/publish", json={
+        "room_id": "R",
+        "event": {
+            "event_id": "remote_evt_1",
+            "type": "participant_heartbeat",
+            "actor": "Bob",
+            "payload": {"branch": "feature/m3"},
+            "created_at": "2026-07-01T00:00:00+00:00",
+        },
+    }).json()
+    stream = client.get("/api/collaboration/relay/events/R").json()
+
+    assert published == {"status": "published", "room_id": "R", "seq": 1}
+    assert stream["events"][0]["event"]["event_id"] == "remote_evt_1"
+    assert stream["events"][0]["event"]["type"] == "participant_heartbeat"
+    assert stream["events"][0]["event"]["payload"] == {"branch": "feature/m3"}

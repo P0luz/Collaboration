@@ -2,9 +2,10 @@
 Collaboration FastAPI Router
 ========================
 
-是什么:Collaboration 的 HTTP API 层,把 rooms/locks/queues/events 暴露成 REST 端点。
+是什么:Collaboration 的 HTTP API 层,把 rooms/locks/queues/events/relay 暴露成 REST 端点。
 做什么:房间(create/join/leave/heartbeat)、意图锁(declare/done/extend/wait_for_clear)、
-        状态查询(status/queue/events)、消息(message)、Git hook 检查(hook/check)。
+        状态查询(status/queue/events)、relay(connect/publish/events/snapshot/disconnect)、
+        消息(message)、Git hook 检查(hook/check)。
         每个写操作顺带记录一条 event。
 不做什么:不含业务逻辑(全部委托给各 utils 模块);不做鉴权(M2 阶段)。
 对外暴露:router(APIRouter,prefix=/api/collaboration)。
@@ -22,7 +23,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from . import events, git_gate, locks, queues, rooms
+from . import events, git_gate, locks, queues, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -80,6 +81,20 @@ class HookCheckRequest(BaseModel):
     room_id: str
     requester: str
     staged_files: list[str]
+
+
+class RelayConnectRequest(BaseModel):
+    room_id: str
+    relay_url: str = "local://memory"
+
+
+class RelayDisconnectRequest(BaseModel):
+    room_id: str
+
+
+class RelayPublishRequest(BaseModel):
+    room_id: str
+    event: dict
 
 
 # ── Room ────────────────────────────────────────────────────────
@@ -201,6 +216,41 @@ def api_get_queue(room_id: str, file: str) -> dict:
 @router.get("/events/{room_id}")
 def api_get_events(room_id: str, limit: int = 50) -> dict:
     return {"events": [asdict(e) for e in events.get_events(room_id, limit)]}
+
+
+# ── Relay ───────────────────────────────────────────────────────
+
+@router.post("/relay/connect")
+def api_relay_connect(req: RelayConnectRequest) -> dict:
+    if not rooms.get_room(req.room_id):
+        raise HTTPException(404, "Room not found")
+    return relay.connect(req.relay_url, req.room_id)
+
+
+@router.post("/relay/disconnect")
+def api_relay_disconnect(req: RelayDisconnectRequest) -> dict:
+    return relay.disconnect(req.room_id)
+
+
+@router.post("/relay/publish")
+def api_relay_publish(req: RelayPublishRequest) -> dict:
+    if not rooms.get_room(req.room_id):
+        raise HTTPException(404, "Room not found")
+    return relay.publish(req.room_id, req.event)
+
+
+@router.get("/relay/events/{room_id}")
+def api_relay_events(room_id: str, since: int = 0, limit: int = 100) -> dict:
+    if not rooms.get_room(room_id):
+        raise HTTPException(404, "Room not found")
+    return relay.subscribe(room_id, since=since, limit=limit)
+
+
+@router.get("/relay/snapshot/{room_id}")
+def api_relay_snapshot(room_id: str) -> dict:
+    if not rooms.get_room(room_id):
+        raise HTTPException(404, "Room not found")
+    return relay.snapshot(room_id)
 
 
 # ── Message ─────────────────────────────────────────────────────
