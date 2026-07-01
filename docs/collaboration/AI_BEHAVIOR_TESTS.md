@@ -29,6 +29,7 @@
 - `tests/collaboration/test_git_gate.py` —— hook 拦截决策
 - `tests/collaboration/test_router.py` —— 端到端 HTTP 流程
 - `tests/collaboration/test_behavior_script.py` —— 强制层行为脚本 CLI 验收
+- `tests/collaboration/test_prompt_acceptance_report.py` —— prompt 层验收报告 CLI 验收
 
 ## 强制层本地脚本
 
@@ -48,3 +49,17 @@ py -3.10 scripts/collaboration-behavior/forced_layer_checks.py --json
 - push gate 可从房间状态识别 waiting lock。
 
 真实 AI 行为(是否真的遵守 1–6)需在集成阶段用真实 agent 跑通,属 M2 之后的验收。
+
+## Prompt 层验收报告
+
+真实 agent 的验收入口:
+
+```powershell
+py -3.10 scripts/collaboration-behavior/prompt_acceptance_report.py init reports/codex-prompt-acceptance.json --agent Codex --operator <name>
+py -3.10 scripts/collaboration-behavior/prompt_acceptance_report.py validate reports/codex-prompt-acceptance.json --json
+```
+
+报告模板和验收说明见:
+
+- `docs/collaboration/PROMPT_ACCEPTANCE.md`
+- `docs/collaboration/PROMPT_LAYER_REPORT_TEMPLATE.md`
