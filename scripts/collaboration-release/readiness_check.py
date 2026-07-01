@@ -46,6 +46,7 @@ REQUIRED_DOCS = [
     "docs/collaboration/MCP_RULES.md",
     "docs/collaboration/SELF_HOSTED_RELAY.md",
     "docs/collaboration/DEPLOYMENT.md",
+    "docs/collaboration/PRODUCT_TIERS.md",
     "docs/collaboration/RELEASE_READINESS.md",
     "docs/collaboration/LICENSE_BOUNDARY.md",
 ]

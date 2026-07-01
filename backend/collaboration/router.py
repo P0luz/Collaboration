@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
-from . import audit, capabilities, dashboard, events, git_gate, locks, queues, rehearsal, relay, rooms
+from . import audit, capabilities, dashboard, events, git_gate, locks, policy, queues, rehearsal, relay, rooms
 from .schema import EventType
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
@@ -258,6 +258,11 @@ def api_check_status(room_id: str) -> dict:
             for file, entries in queues.get_all_queues(room_id).items()
         },
     }
+
+
+@router.get("/plans")
+def api_plans() -> dict:
+    return policy.list_plan_catalog()
 
 
 @router.get("/queue/{room_id}/{file:path}")

@@ -48,12 +48,83 @@ PLAN_POLICIES: dict[str, dict] = {
 }
 
 
+PLAN_CATALOG: dict[str, dict] = {
+    "free": {
+        "label": "Free",
+        "positioning": "Local validation for two participants",
+        "included": [
+            "local or self-hosted relay",
+            "basic intent locks",
+            "watcher and hook enforcement",
+        ],
+        "reserved": [],
+    },
+    "team": {
+        "label": "Team",
+        "positioning": "Small team coordination with managed relay metadata",
+        "included": [
+            "managed relay metadata path",
+            "shared dashboard",
+            "basic audit events",
+        ],
+        "reserved": ["billing integration"],
+    },
+    "pro": {
+        "label": "Pro",
+        "positioning": "Governance evidence and longer audit retention",
+        "included": [
+            "AI behavior checks",
+            "audit log review",
+            "risk-rule templates",
+        ],
+        "reserved": ["weekly conflict reports"],
+    },
+    "enterprise": {
+        "label": "Enterprise",
+        "positioning": "Private relay and compliance-oriented governance",
+        "included": [
+            "private relay",
+            "audit export",
+            "custom retention",
+        ],
+        "reserved": [
+            "SSO or directory integration",
+            "custom hook policy",
+            "compliance reports",
+        ],
+    },
+}
+
+
 def get_plan_policy(plan: str = "free") -> dict:
     """Return a copy of the policy defaults for a known plan."""
     normalized = (plan or "free").lower()
     if normalized not in PLAN_POLICIES:
         raise ValueError(f"unknown plan: {plan}")
     return dict(PLAN_POLICIES[normalized])
+
+
+def list_plan_catalog() -> dict:
+    """Return v5.2 commercial packaging metadata without billing behavior."""
+    plans = []
+    for plan, defaults in PLAN_POLICIES.items():
+        packaging = PLAN_CATALOG[plan]
+        plans.append({
+            "plan": plan,
+            "label": packaging["label"],
+            "positioning": packaging["positioning"],
+            "max_participants": defaults["max_participants"],
+            "relay_mode": defaults["relay_mode"],
+            "audit_retention_days": defaults["audit_retention_days"],
+            "policy_rules_enabled": defaults["policy_rules_enabled"],
+            "included": list(packaging["included"]),
+            "reserved": list(packaging["reserved"]),
+        })
+    return {
+        "billing_implemented": False,
+        "relay_transmits_source_code": False,
+        "plans": plans,
+    }
 
 
 def resolve_room_policy(

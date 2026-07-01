@@ -56,6 +56,7 @@ def test_release_readiness_gate_runs_core_checks(readiness_module):
     ]
     assert "README.md" in report["checks"][0]["details"]["present"]
     assert "docs/collaboration/DEPLOYMENT.md" in report["checks"][0]["details"]["present"]
+    assert "docs/collaboration/PRODUCT_TIERS.md" in report["checks"][0]["details"]["present"]
     assert report["checks"][1]["details"] == {
         "service": "collaboration",
         "status": "ok",
