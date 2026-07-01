@@ -47,6 +47,7 @@ REQUIRED_DOCS = [
     "docs/collaboration/SELF_HOSTED_RELAY.md",
     "docs/collaboration/DEPLOYMENT.md",
     "docs/collaboration/PRODUCT_TIERS.md",
+    "docs/collaboration/V5_2_ACCEPTANCE.md",
     "docs/collaboration/RELEASE_READINESS.md",
     "docs/collaboration/LICENSE_BOUNDARY.md",
 ]
@@ -67,6 +68,7 @@ def run_readiness(root: Path, *, include_pytest: bool = False) -> dict[str, Any]
         _run_check("app_health", _check_app_health),
         _run_check("self_hosted_relay_smoke", lambda: _check_self_hosted_relay(root)),
         _run_check("deployment_packaging", lambda: _check_deployment_packaging(root)),
+        _run_check("v52_acceptance", lambda: _check_v52_acceptance(root)),
         _run_check("brand_boundary", lambda: _check_brand_boundary(root)),
     ]
     if include_pytest:
@@ -172,6 +174,17 @@ def _check_deployment_packaging(root: Path) -> dict[str, Any]:
     if '"8080:8080"' not in compose:
         raise AssertionError("compose file does not publish port 8080")
     return {"files": files}
+
+
+def _check_v52_acceptance(root: Path) -> dict[str, Any]:
+    acceptance = _load_module(
+        root / "scripts/collaboration-release/v52_acceptance.py",
+        "v52_acceptance_for_readiness",
+    )
+    report = acceptance.run_acceptance(root)
+    if report["status"] != "pass":
+        raise AssertionError(json.dumps(report, ensure_ascii=False))
+    return report["summary"]
 
 
 def _check_pytest(root: Path) -> dict[str, Any]:

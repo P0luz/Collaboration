@@ -56,6 +56,7 @@ py -3.10 scripts/collaboration-relay/self_hosted_smoke.py `
 - [Deployment](docs/collaboration/DEPLOYMENT.md)
 - [Product Tiers](docs/collaboration/PRODUCT_TIERS.md)
 - [Release Readiness](docs/collaboration/RELEASE_READINESS.md)
+- [v5.2 Acceptance](docs/collaboration/V5_2_ACCEPTANCE.md)
 - [License Boundary](docs/collaboration/LICENSE_BOUNDARY.md)
 
 ## Boundary
