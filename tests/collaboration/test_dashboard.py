@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.collaboration import events, locks, queues, relay, rooms
+from backend.collaboration import audit, events, locks, queues, relay, rooms
 from backend.collaboration.app import app
 
 
@@ -14,6 +14,7 @@ def reset_state():
     locks._locks.clear()
     locks._file_holders.clear()
     queues._queues.clear()
+    audit._call_logs.clear()
     events._events.clear()
     relay._connections.clear()
     relay._event_streams.clear()
@@ -63,6 +64,11 @@ def _seed_dashboard_room(client):
         "sender": "Cara",
         "message": "watching queue",
     })
+    client.post("/api/collaboration/hook/check", json={
+        "room_id": "R",
+        "requester": "Cara",
+        "staged_files": ["src/main.py"],
+    })
 
 
 def test_dashboard_data_aggregates_room_state(client):
@@ -78,7 +84,9 @@ def test_dashboard_data_aggregates_room_state(client):
         "active_locks": 1,
         "waiting_locks": 1,
         "queued_files": 1,
-        "events": 7,
+        "events": 8,
+        "audit": 3,
+        "hook_blocks": 1,
     }
     assert payload["relay"]["connected"] is True
     assert payload["relay"]["mode"] == "local"
@@ -86,7 +94,11 @@ def test_dashboard_data_aggregates_room_state(client):
     assert payload["active_locks"][0]["owner"] == "Alice"
     assert payload["waiting_locks"][0]["owner"] == "Bob"
     assert payload["queues"]["src/main.py"][0]["owner"] == "Bob"
-    assert payload["events"][0]["event_type"] == "message_sent"
+    assert payload["events"][0]["event_type"] == "hook_blocked"
+    assert payload["audit"][0]["tool"] == "hook_check"
+    assert payload["audit"][0]["result"] == "blocked"
+    assert payload["hook_feedback"][0]["actor"] == "Cara"
+    assert payload["hook_feedback"][0]["blocked_files"] == ["src/main.py"]
 
 
 def test_dashboard_html_renders_core_state(client):
@@ -105,6 +117,10 @@ def test_dashboard_html_renders_core_state(client):
     assert "Cara" in body
     assert "src/main.py" in body
     assert "add feature" in body
+    assert "Audit Log" in body
+    assert "hook_check" in body
+    assert "Hook Feedback" in body
+    assert "blocked_files" in body
 
 
 def test_dashboard_unknown_room_returns_404(client):

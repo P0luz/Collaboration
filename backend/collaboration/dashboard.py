@@ -3,8 +3,8 @@ Collaboration Dashboard helpers
 ===============================
 
 What it is: a tiny read-only projection layer for the M3 dashboard.
-What it does: combines room, participant, lock, queue, event, and relay state
-              into one payload and renders a minimal HTML view.
+What it does: combines room, participant, lock, queue, event, audit, hook,
+              and relay state into one payload and renders a minimal HTML view.
 What it does not do: mutate collaboration state, authenticate users, or replace
                      the future Savoir-Fair frontend integration.
 Exports: build_dashboard_data, render_dashboard_html.
@@ -19,7 +19,8 @@ from dataclasses import asdict
 from html import escape
 from typing import Optional
 
-from . import events, locks, queues, relay, rooms
+from . import audit, events, locks, queues, relay, rooms
+from .schema import EventType
 
 
 def build_dashboard_data(room_id: str, event_limit: int = 25) -> Optional[dict]:
@@ -36,6 +37,17 @@ def build_dashboard_data(room_id: str, event_limit: int = 25) -> Optional[dict]:
         for file, entries in queues.get_all_queues(room_id).items()
     }
     recent_events = [asdict(event) for event in events.get_events(room_id, event_limit)]
+    recent_audit = [asdict(record) for record in audit.get_call_logs(room_id, event_limit)]
+    hook_feedback = [
+        {
+            "created_at": event["created_at"],
+            "actor": event["actor"],
+            "blocked_files": event.get("payload", {}).get("blocked_files", []),
+            "payload": event.get("payload", {}),
+        }
+        for event in recent_events
+        if event.get("event_type") == EventType.HOOK_BLOCKED
+    ]
 
     return {
         "room": asdict(room),
@@ -46,12 +58,16 @@ def build_dashboard_data(room_id: str, event_limit: int = 25) -> Optional[dict]:
             "waiting_locks": len(waiting_locks),
             "queued_files": len(queue_state),
             "events": len(recent_events),
+            "audit": len(recent_audit),
+            "hook_blocks": len(hook_feedback),
         },
         "participants": participants,
         "active_locks": active_locks,
         "waiting_locks": waiting_locks,
         "queues": queue_state,
         "events": recent_events,
+        "audit": recent_audit,
+        "hook_feedback": hook_feedback,
     }
 
 
@@ -111,6 +127,28 @@ def render_dashboard_html(data: dict) -> str:
             _format_payload(event.get("payload", {})),
         ])
         for event in data["events"]
+    ) or _empty_row(4)
+
+    audit_rows = "".join(
+        _row([
+            record.get("created_at", ""),
+            record.get("actor", ""),
+            record.get("agent", ""),
+            record.get("tool", ""),
+            record.get("result", ""),
+            ", ".join(record.get("files", [])),
+        ])
+        for record in data.get("audit", [])
+    ) or _empty_row(6)
+
+    hook_feedback_rows = "".join(
+        _row([
+            item.get("created_at", ""),
+            item.get("actor", ""),
+            ", ".join(item.get("blocked_files", [])),
+            _format_payload(item.get("payload", {})),
+        ])
+        for item in data.get("hook_feedback", [])
     ) or _empty_row(4)
 
     return f"""<!doctype html>
@@ -213,6 +251,8 @@ def render_dashboard_html(data: dict) -> str:
     {_metric("Waiting Locks", summary["waiting_locks"])}
     {_metric("Queued Files", summary["queued_files"])}
     {_metric("Events", summary["events"])}
+    {_metric("Audit", summary["audit"])}
+    {_metric("Hook Blocks", summary["hook_blocks"])}
   </section>
 
   <h2>Participants</h2>
@@ -229,6 +269,12 @@ def render_dashboard_html(data: dict) -> str:
 
   <h2>Timeline</h2>
   {_table(["Created", "Actor", "Type", "Payload"], event_rows)}
+
+  <h2>Audit Log</h2>
+  {_table(["Created", "Actor", "Agent", "Tool", "Result", "Files"], audit_rows)}
+
+  <h2>Hook Feedback</h2>
+  {_table(["Created", "Actor", "Blocked Files", "Payload"], hook_feedback_rows)}
 </main>
 </body>
 </html>"""

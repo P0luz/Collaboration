@@ -23,7 +23,7 @@ py -3.10 scripts/collaboration-behavior/rehearsal_report.py init reports/m6-rehe
 1. 准备房间
    - 创建 room,两人加入。
    - 确认两边 repo remote、branch、head commit。
-   - 打开 Dashboard。
+   - 打开 Dashboard,确认 `Audit Log` 和 `Hook Feedback` 区域可见。
 
 2. 完成真实小任务
    - 选择一个低风险的小改动。
@@ -41,6 +41,8 @@ py -3.10 scripts/collaboration-behavior/rehearsal_report.py init reports/m6-rehe
 
 5. 复盘
    - 记录 Dashboard 可用性问题。
+   - 从 Dashboard 的 `Audit Log` 复制 declare/wait/report/hook 证据。
+   - 从 Dashboard 的 `Hook Feedback` 复制 blocked 文件和恢复动作证据。
    - 记录冲突、等待、恢复是否清晰。
    - 记录后续改进项。
 
@@ -58,4 +60,3 @@ py -3.10 scripts/collaboration-behavior/rehearsal_report.py validate reports/m6-
 - 每个场景都填写必填证据。
 
 脚本返回码为 `0` 表示通过,`1` 表示仍有失败或缺证据。
-
